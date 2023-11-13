@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" rel="stylesheet">
+        <link href="styles.css" rel="stylesheet">
+        <title>Trivia!</title>
+    </head>
+    <body>
+        <div class="header">
+            <h1>Trivia!</h1>
+        </div>
+
+        <div class="container">
+            <div class="section">
+                <h2>Part 1: Multiple Choice </h2>
+                <hr>
+                <h3>What is correct about nephrotic disease?</h3>
+                <!-- Add multiple choice question here -->
+                <button id="mcq-false">Associated with proteinuria but not lipiduria</button>
+                <button id="mcq-false">Associated with lipiduria but not proteinuria</button>
+                <button id="mcq-true">More than 3g of protein is found in the urine</button>
+                <button id="mcq-false">Less than 3g of protein is found in the urine</button>
+                <div id="mcq-answer1"></div>
+            </div>
+
+            <div class="section">
+                <h2>Part 2: Free Response</h2>
+                <hr>
+                <h3>What is the recommended treatement for peptic ulcer?</h3>
+                <!-- Add free response question here -->
+                <input id="free-input" type="text">
+                <button onclick="checkQuestion(['ppi', 'proton pump inhibitor'])">Check answer</button>
+                <div id="free-answer1"></div>
+            </div>
+        </div>
+        <script>
+            // Add code to check answers to questions
+            let mcqTrue = document.querySelector("#mcq-true");
+            let mcqFalse = document.querySelectorAll("#mcq-false");
+            mcqTrue.onclick = function () {
+                let answer = document.querySelector("#mcq-answer1");
+                mcqTrue.style.backgroundColor = 'green';
+                answer.innerHTML = "Correct";
+            }
+            for (let i = 0, j = mcqFalse.length; i < j; i++) {
+                mcqFalse[i].onclick = function () {
+                    let answer = document.querySelector("#mcq-answer1");
+                    mcqFalse[i].style.backgroundColor = 'red';
+                    answer.innerHTML = "Incorrect";
+                }
+            }
+            function checkQuestion(answer) {
+                let input = document.querySelector("#free-input");
+                let aswr = document.querySelector("#free-answer1");
+                for (let i = 0, j = answer.length; i < j; i++) {
+                    if (answer[i] === input.value.toLowerCase()) {
+                        input.style.backgroundColor = 'green';
+                        aswr.innerHTML = "Correct";
+                        return true;
+                    }
+                }
+                input.style.backgroundColor = 'red';
+                aswr.innerHTML = "Incorrect";
+                return false;
+            }
+        </script>
+    </body>
+</html>

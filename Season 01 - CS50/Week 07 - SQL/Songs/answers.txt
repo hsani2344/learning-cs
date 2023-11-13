@@ -1,0 +1,34 @@
+Respectively, the top 100 songs of this person has an average valence, energy and danceability of 0.484, 0.659 and 0.716.
+
+Here are the least happiest songs (valence):
+Nevermind | 0.0796
+Dusk Till Dawn - Radio Edit | 0.0967
+This Is Me | 0.1
+
+Here are the most happiest songs (valence):
+Shape of You | 0.931
+Finesse (Remix) [feat. Cardi B] | 0.926
+Bella | 0.844
+
+Here are the least energetic songs:
+lovely (with Khalid) | 0.296
+Perfect Duet (Ed Sheeran & Beyonc?) | 0.299
+changes | 0.308
+
+Here are the most energetic songs:
+Nice For What | 0.909
+1, 2, 3 (feat. Jason Derulo & De La Ghetto) | 0.895
+Echame La Culpa | 0.889
+
+Here are the least danceable songs:
+Dusk Till Dawn - Radio Edit | 0.258
+This Is Me | 0.284
+lovely (with Khalid) | 0.351
+
+Here are the most danceable songs:
+Yes Indeed | 0.964
+FEFE (feat. Nicki Minaj & Murda Beatz) | 0.931
+Look Alive (feat. Drake) | 0.922
+
+At the end of the day, these are just numbers and songs can have certain meaning depending on the person, however this all of this data the definitely giving great insight to the user.
+I believe if the user could somehow provide his own rating of valence, energy and danceability this data would be more accurate.

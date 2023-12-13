@@ -22,6 +22,14 @@ db = SQL("sqlite:///birthdays.db")
 #     response.headers["Pragma"] = "no-cache"
 #     return response
 
+def home():
+    birthday_list = db.execute(
+        """
+            SELECT *
+              FROM birthdays
+        """
+    )
+    return render_template("index.html", birthday_list = birthday_list)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -29,30 +37,23 @@ def index():
         name = request.form['name']
         day = int(request.form['birthday'][8:10])
         month = int(request.form['birthday'][5:7])
-        id = db.execute(
-            """
-                SELECT id 
-                  FROM birthdays
-                 ORDER BY id DESC 
-                 LIMIT 1;
-            """
-        )[0]['id'] + 1;
+        try:
+            id = int(db.execute(
+                """
+                    SELECT id 
+                      FROM birthdays
+                     ORDER BY id DESC 
+                     LIMIT 1;
+                """
+            )[0]['id']) + 1
+        except:
+            id = 1
         db.execute(
             f"""
                 INSERT INTO birthdays ( id, name, month, day )
                 VALUES ({id}, '{name}', {month}, {day});
             """
         )
-        return "Success"
-        # return redirect("/")
-
+        return home()
     else:
-        birthday_list = db.execute(
-            """
-                SELECT *
-                  FROM birthdays
-            """
-        )
-        return render_template("index.html", birthday_list = birthday_list)
-
-
+        return home()

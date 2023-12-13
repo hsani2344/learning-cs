@@ -26,9 +26,9 @@ db = SQL("sqlite:///birthdays.db")
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
-        # TODO: Add the user's entry into the database
         name = request.form['name']
-        birthday = request.form['birthday']
+        day = int(request.form['birthday'][8:10])
+        month = int(request.form['birthday'][5:7])
         id = db.execute(
             """
                 SELECT id 
@@ -40,14 +40,13 @@ def index():
         db.execute(
             f"""
                 INSERT INTO birthdays ( id, name, month, day )
-                VALUES ({id}, '{name}', 12, 14);
+                VALUES ({id}, '{name}', {month}, {day});
             """
         )
         return "Success"
         # return redirect("/")
 
     else:
-        # TODO: Display the entries in the database on index.html
         birthday_list = db.execute(
             """
                 SELECT *

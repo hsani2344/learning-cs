@@ -29,7 +29,22 @@ def index():
         # TODO: Add the user's entry into the database
         name = request.form['name']
         birthday = request.form['birthday']
-        return redirect("/")
+        id = db.execute(
+            """
+                SELECT id 
+                  FROM birthdays
+                 ORDER BY id DESC 
+                 LIMIT 1;
+            """
+        )[0]['id'] + 1;
+        db.execute(
+            f"""
+                INSERT INTO birthdays ( id, name, month, day )
+                VALUES ({id}, '{name}', 12, 14);
+            """
+        )
+        return "Success"
+        # return redirect("/")
 
     else:
         # TODO: Display the entries in the database on index.html

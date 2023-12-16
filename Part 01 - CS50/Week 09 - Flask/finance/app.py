@@ -112,13 +112,6 @@ def register():
     if request.method == "GET":
         return render_template("register.html")
     else:
-        '''
-            Error handeling
-            DONE | Case 1: Form empty
-            DONE | Case 2: User already exist
-
-            TODO Now the user must be logged in after registration
-        '''
         if request.form['username'] == '' or request.form['password'] == '':
             error = 'Form unfilled'
             print(error)

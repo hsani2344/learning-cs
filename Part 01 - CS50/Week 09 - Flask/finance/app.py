@@ -110,7 +110,7 @@ def quote():
 def register():
     """Register user"""
     if request.method == "GET":
-        return render_template("login.html")
+        return render_template("register.html")
     else:
         return render_template("layout.html")
     return apology("TODO")

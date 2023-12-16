@@ -112,8 +112,33 @@ def register():
     if request.method == "GET":
         return render_template("register.html")
     else:
-        return render_template("layout.html")
-    return apology("TODO")
+        '''
+            Error handeling
+            DONE | Case 1: Form empty
+            DONE | Case 2: User already exist
+
+            TODO Now the user must be logged in after registration
+        '''
+        if request.form['username'] == '' or request.form['password'] == '':
+            error = 'Form unfilled'
+            print(error)
+            return apology(error)
+        try:
+            db.execute(
+                       f"""
+                           INSERT INTO users(username, hash)
+                           VALUES (\'{request.form['username']}\', \'{request.form['password']}\');
+                       """)
+            session["user_id"] = db.execute(
+                               f"""
+                               SELECT id
+                                 FROM users
+                                WHERE username = \'{request.form['username']}\';
+                               """)[0]['id']
+            return redirect("/")
+        except:
+            error = 'Username taken'
+            return apology(error)
 
 
 @app.route("/sell", methods=["GET", "POST"])

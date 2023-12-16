@@ -1,7 +1,6 @@
 import os
 
 from sql import SQL
-import sqlalchemy
 from flask import Flask, flash, jsonify, redirect, render_template, request, session
 
 # Configure application

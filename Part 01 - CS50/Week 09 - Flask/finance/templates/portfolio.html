@@ -19,6 +19,19 @@
   <link href="/static/styles.css" rel="stylesheet">
 
   <title>C$50 Finance: {% block title %}{% endblock %}</title>
+  <style>
+    table,
+    td {
+      border: 1px solid #333;
+    }
+
+    thead,
+    tfoot {
+      background-color: #333;
+      color: #fff;
+    }
+  </style>
+
 </head>
 
 <body>
@@ -61,8 +74,42 @@
   {% endif %}
 
   <main class="container-fluid py-5 text-center">
-    {% block main %}
-    {% endblock %}
+    <table>
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Name</th>
+          <th>Shares</th>
+          <th>Price</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% block main %}
+        <tr>
+          <td>{{ stock.symbol }}</td>
+          <td>{{ stock.name }}</td>
+          <td>1</td>
+          <td>{{ stock.price }}</td>
+          <td>0</td>
+        </tr>
+        {% endblock %}
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>Cash</td>
+          <td>500</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>TOTAL</td>
+          <td>1000</td>
+        </tr>
+      </tbody>
+    </table>
   </main>
 
   <footer class="mb-5 small text-center text-muted">

@@ -3,7 +3,7 @@
 ## Quote
 
 - [ ] Create the table
-  - [ ] Skeleton
+  - [x] Skeleton
   - [ ] Styling
   - [ ] Jinja
 - [ ] Function lookup(): error handeling

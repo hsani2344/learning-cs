@@ -35,14 +35,45 @@ def after_request(response):
 @login_required
 def index():
     """Show portfolio of stocks"""
-    return apology("TODO")
+    # Create an array of dict with
+    # Stock price and symbol
+    # Number of shares from database
+    # Money
+    try:
+        stock = lookup('BTC-USD')
+        portfolio = db.execute(
+            """
+                SELECT * FROM "BTC-USD" WHERE user_id = 1;
+            """
+        )
+        print(stock)
+        print(portfolio)
+        return render_template("portfolio.html", stock=stock, portfolio=portfolio)
+    except:
+        return apology("TODO")
 
 
 @app.route("/buy", methods=["GET", "POST"])
 @login_required
 def buy():
     """Buy shares of stock"""
-    return apology("TODO")
+    try:
+        portfolio = db.execute(
+            f"""
+                SELECT * FROM "{request.form['symbol']}" WHERE user_id = 1;
+            """
+        )
+        db.execute(
+            f"""
+                UPDATE "{request.form['symbol']}"
+                SET shares = {portfolio[0]['shares'] + 1}
+                WHERE user_id = 1;
+            """
+        )
+        return redirect("/")
+    except:
+        pass
+    return apology("Not enough cash")
 
 
 @app.route("/history")
@@ -127,7 +158,7 @@ def register():
             db.execute(
                        f"""
                            INSERT INTO users(username, hash)
-                           VALUES (\'{request.form['username']}\', \'{request.form['password']}\');
+                           VALUES (\'{request.form['username']}\', \'{generate_password_hash(request.form['password'])}\');
                        """)
             session["user_id"] = db.execute(
                                f"""

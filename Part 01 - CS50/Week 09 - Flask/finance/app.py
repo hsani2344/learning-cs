@@ -39,41 +39,93 @@ def index():
     # Stock price and symbol
     # Number of shares from database
     # Money
-    try:
-        stock = lookup('BTC-USD')
-        portfolio = db.execute(
-            """
-                SELECT * FROM "BTC-USD" WHERE user_id = 1;
-            """
-        )
-        print(stock)
-        print(portfolio)
-        return render_template("portfolio.html", stock=stock, portfolio=portfolio)
-    except:
-        return apology("TODO")
+    # try:
+        # return render_template("portfolio.html", stock=stock, portfolio=portfolio)
+    # except:
+    return apology("TODO")
 
 
 @app.route("/buy", methods=["GET", "POST"])
 @login_required
 def buy():
     """Buy shares of stock"""
-    try:
-        portfolio = db.execute(
-            f"""
-                SELECT * FROM "{request.form['symbol']}" WHERE user_id = 1;
-            """
-        )
-        db.execute(
-            f"""
-                UPDATE "{request.form['symbol']}"
-                SET shares = {portfolio[0]['shares'] + 1}
-                WHERE user_id = 1;
-            """
-        )
+    if request.method == "GET":
+        return render_template("buy.html")
+    else:
+        stock = lookup(f"{request.form['symbol']}")
+        if stock == None:
+            return apology("Stock not found")
+        cash = db.execute(f"SELECT cash FROM users WHERE id = {session['user_id']};")
+        stock = db.execute(f"SELECT * FROM stocks WHERE id = {session['user_id']} AND symbol = \'{request.form['symbol']}\';")
+                          
+        # ERROR #2: User does not have enough cash
+        print(cash, stock);
+        # Lookup return None if the stock was not found
+        # elif stock['price'] > user[0]['cash']:
+        #     return apology("Not enough money")
+        # else:
+        #     pass
+        # try:
+        #     # Condition
+        #     # Increase if .count is not empty
+        #     # Else insert into table
+        #     portfolio = db.execute(
+        #         f"""
+        #             SELECT * FROM "{request.form['symbol']}" WHERE user_id = {session['user_id']};
+        #         """
+        #     )
+        # except:
+        #     print(f"ERROR: TABLE \"{request.form['symbol']}\" does not exist")
+        #     db.execute(
+        #         f"""
+        #             CREATE TABLE "{request.form['symbol']}" (
+        #                 id SERIAL AUTO_INCREMENT UNIQUE,
+        #                 user_id SERIAL UNIQUE NOT NULL,
+        #                 shares INT UNSIGNED NOT NULL DEFAULT 1,
+        #                 PRIMARY KEY (id)
+        #                 FOREIGN KEY (user_id) REFERENCES users(id)
+        #             );
+        #         """
+        #     )
+        #     db.execute(
+        #         f"""
+        #             UPDATE "users"
+        #             SET cash = {user[0].cash - stock.price}
+        #             WHERE user_id = {session['user_id']};
+        #         """
+        #     )
+        # try:
+        #     db.execute(
+        #         f"""
+        #             UPDATE "{request.form['symbol']}"
+        #             SET shares = {portfolio[0]['shares'] + 1}
+        #             WHERE user_id = {session['user_id']};
+        #         """
+        #     )
+        #     print(user[0]['cash'] - stock['price'])
+        #     db.execute(
+        #         f"""
+        #             UPDATE "users"
+        #             SET cash = {user[0]['cash'] - stock['price']}
+        #             WHERE id = {session['user_id']};
+        #         """
+        #     )
+        # except:
+        #     print(f"ERROR: User #{session['user_id']} does not exist in TABLE \"{request.form['symbol']}\"")
+        #     db.execute(
+        #         f"""
+        #             INSERT INTO "{request.form['symbol']}"(user_id)
+        #             VALUES ({session['user_id']});
+        #         """
+        #     )
+        #     db.execute(
+        #         f"""
+        #             UPDATE "users"
+        #             SET cash = {user[0].cash - stock.price}
+        #             WHERE user_id = {session['user_id']};
+        #         """
+        #     )
         return redirect("/")
-    except:
-        pass
-    return apology("Not enough cash")
 
 
 @app.route("/history")
@@ -176,4 +228,8 @@ def register():
 @login_required
 def sell():
     """Sell shares of stock"""
+    # TODO Sell
+    # TODO Record the action in a history
+    # TODO ERROR #1: I don't have any stock
+    # TODO ERROR #2: Stock does not exist
     return apology("TODO")

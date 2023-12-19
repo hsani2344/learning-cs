@@ -25,7 +25,12 @@
 -- INSERT INTO stocks(user_id, symbol)
 -- VALUES (1, 'NKE');
 
+-- UPDATE stocks SET shares = 2 WHERE user_id = 1 AND symbole = 'NKE';
+
 -- SELECT * FROM stocks
- -- WHERE id = 1 AND symbol = 'NKE';
+--  WHERE id = 1 AND symbol = 'NKE';
+
+SELECT * FROM stocks
+ WHERE user_id = 1;
 
 

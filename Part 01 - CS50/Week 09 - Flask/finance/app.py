@@ -52,19 +52,13 @@ def buy():
     if request.method == "GET":
         return render_template("buy.html")
     else:
-        stock = lookup(f"{request.form['symbol']}")
-        if stock == None:
+        stocks_data = lookup(f"{request.form['symbol']}")
+        if stocks_data == None:
             return apology("Stock not found")
-        cash = db.execute(f"SELECT cash FROM users WHERE id = {session['user_id']};")
-        stock = db.execute(f"SELECT * FROM stocks WHERE id = {session['user_id']} AND symbol = \'{request.form['symbol']}\';")
-                          
-        # ERROR #2: User does not have enough cash
-        print(cash, stock);
-        # Lookup return None if the stock was not found
-        # elif stock['price'] > user[0]['cash']:
-        #     return apology("Not enough money")
-        # else:
-        #     pass
+        user = db.execute(f"SELECT cash FROM users WHERE id = {session['user_id']};")
+        user_stocks = db.execute(f"SELECT * FROM stocks WHERE id = {session['user_id']} AND symbol = \'{request.form['symbol']}\';")                         
+        if stocks_data['price'] > user[0]['cash']:
+            return apology("Not enough money")
         # try:
         #     # Condition
         #     # Increase if .count is not empty

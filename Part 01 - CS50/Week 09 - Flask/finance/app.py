@@ -55,72 +55,43 @@ def buy():
         stocks_data = lookup(f"{request.form['symbol']}")
         if stocks_data == None:
             return apology("Stock not found")
-        user = db.execute(f"SELECT cash FROM users WHERE id = {session['user_id']};")
-        user_stocks = db.execute(f"SELECT * FROM stocks WHERE user_id = {session['user_id']} AND symbol = \'{request.form['symbol']}\';")                         
-        # if stocks_data['price'] > user[0]['cash']:
-            # return apology("Not enough money")
+        user = db.execute(f" \
+                          SELECT cash \
+                            FROM users \
+                           WHERE id = {session['user_id']}; \
+                          ")
+        user_stocks = db.execute(f" \
+                                 SELECT * \
+                                 FROM stocks \
+                                 WHERE user_id = {session['user_id']} \
+                                   AND symbol = \'{request.form['symbol']}\'; \
+                                 ")                         
+        if stocks_data['price'] > user[0]['cash']:
+            return apology("Not enough money")
         try:
             new_shares = user_stocks[0]['shares'] + 1
-            db.execute(f"UPDATE stocks SET shares = {new_shares} WHERE user_id = {session['user_id']} AND symbol = \'{request.form['symbol']}\';")
+            db.execute(f" \
+                       UPDATE stocks \
+                       SET shares = {new_shares} \
+                       WHERE user_id = {session['user_id']} \
+                         AND symbol = \'{request.form['symbol']}\'; \
+                       ")
         except:
-            print(f"User not found in TABLE stocks WHERE id = {session['user_id']} AND symbol = \'{request.form['symbol']}\'")
-            db.execute(f"INSERT INTO stocks(user_id, symbol) VALUES ({session['user_id']}, \'{request.form['symbol']}\');")
-        #     portfolio = db.execute(
-        #         f"""
-        #             SELECT * FROM "{request.form['symbol']}" WHERE user_id = {session['user_id']};
-        #         """
-        #     )
-        # except:
-        #     print(f"ERROR: TABLE \"{request.form['symbol']}\" does not exist")
-        #     db.execute(
-        #         f"""
-        #             CREATE TABLE "{request.form['symbol']}" (
-        #                 id SERIAL AUTO_INCREMENT UNIQUE,
-        #                 user_id SERIAL UNIQUE NOT NULL,
-        #                 shares INT UNSIGNED NOT NULL DEFAULT 1,
-        #                 PRIMARY KEY (id)
-        #                 FOREIGN KEY (user_id) REFERENCES users(id)
-        #             );
-        #         """
-        #     )
-        #     db.execute(
-        #         f"""
-        #             UPDATE "users"
-        #             SET cash = {user[0].cash - stock.price}
-        #             WHERE user_id = {session['user_id']};
-        #         """
-        #     )
-        # try:
-        #     db.execute(
-        #         f"""
-        #             UPDATE "{request.form['symbol']}"
-        #             SET shares = {portfolio[0]['shares'] + 1}
-        #             WHERE user_id = {session['user_id']};
-        #         """
-        #     )
-        #     print(user[0]['cash'] - stock['price'])
-        #     db.execute(
-        #         f"""
-        #             UPDATE "users"
-        #             SET cash = {user[0]['cash'] - stock['price']}
-        #             WHERE id = {session['user_id']};
-        #         """
-        #     )
-        # except:
-        #     print(f"ERROR: User #{session['user_id']} does not exist in TABLE \"{request.form['symbol']}\"")
-        #     db.execute(
-        #         f"""
-        #             INSERT INTO "{request.form['symbol']}"(user_id)
-        #             VALUES ({session['user_id']});
-        #         """
-        #     )
-        #     db.execute(
-        #         f"""
-        #             UPDATE "users"
-        #             SET cash = {user[0].cash - stock.price}
-        #             WHERE user_id = {session['user_id']};
-        #         """
-        #     )
+            print(f" \
+                  User not found in \
+                  TABLE stocks \
+                  WHERE id = {session['user_id']} \
+                    AND symbol = \'{request.form['symbol']}\' \
+                  ")
+            db.execute(f" \
+                       INSERT INTO stocks(user_id, symbol) \
+                       VALUES ({session['user_id']}, \'{request.form['symbol']}\'); \
+                       ")
+        db.execute(f" \
+                   UPDATE users \
+                      SET cash = {user[0]['cash'] - stocks_data['price']} \
+                    WHERE id = {session['user_id']}; \
+                   ")
         return redirect("/")
 
 

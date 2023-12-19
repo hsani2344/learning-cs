@@ -30,7 +30,9 @@
 -- SELECT * FROM stocks
 --  WHERE id = 1 AND symbol = 'NKE';
 
-SELECT * FROM stocks
- WHERE user_id = 1;
+-- SELECT * FROM stocks
+ -- WHERE user_id = 1;
+
+ UPDATE users SET cash = 300 WHERE id = 1;
 
 

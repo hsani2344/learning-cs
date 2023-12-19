@@ -10,12 +10,10 @@ const client = new db.Client({
   user: 'postgres',
   password: '123456',
 })
-
+await client.connect()
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
-
-await client.connect()
 
 app.get("/", async (req, res) => {
   let items = await client.query({
@@ -38,9 +36,27 @@ app.post("/add", async (req, res) => {
   res.redirect("/");
 });
 
-app.post("/edit", (req, res) => {});
+app.post("/edit", async (req, res) => {
+  const itemId = req.body.updatedItemId;
+  const updatedItemTitle = req.body.updatedItemTitle;
+  client.query({
+    name: 'updateItem',
+    text: 'UPDATE items SET title = $1 WHERE id = $2',
+    values: [`${updatedItemTitle}`, itemId]
+  });
+  res.redirect("/");
 
-app.post("/delete", (req, res) => {});
+});
+
+app.post("/delete", (req, res) => {
+  const itemId = req.body.deleteItemId;
+  client.query({
+    name: 'itemId',
+    text: 'DELETE FROM items WHERE id = $1',
+    values: [itemId]
+  });
+  res.redirect("/");
+});
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

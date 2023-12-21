@@ -173,22 +173,23 @@ def register():
             error = 'Form unfilled'
             print(error)
             return apology(error)
-        try:
-            db.execute(
-                       f"""
-                           INSERT INTO users(username, hash)
-                           VALUES (\'{request.form['username']}\', \'{generate_password_hash(request.form['password'])}\');
-                       """)
-            session["user_id"] = db.execute(
-                               f"""
+        db_username = db.execute(f"SELECT username FROM users WHERE username = \'{request.form['username']}\';")
+        if len(db_username) > 0:
+            error = 'Username taken'
+            print(error)
+            return apology(error)
+        db.execute(
+                   f"""
+                       INSERT INTO users(username, hash)
+                       VALUES (\'{request.form['username']}\', \'{generate_password_hash(request.form['password'])}\');
+                   """)
+        session["user_id"] = db.execute(
+                           f"""
                                SELECT id
                                  FROM users
                                 WHERE username = \'{request.form['username']}\';
-                               """)[0]['id']
-            return redirect("/")
-        except:
-            error = 'Username taken'
-            return apology(error)
+                           """)[0]['id']
+        return redirect("/")
 
 
 @app.route("/sell", methods=["GET", "POST"])

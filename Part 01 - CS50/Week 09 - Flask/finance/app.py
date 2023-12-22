@@ -196,13 +196,26 @@ def register():
 @login_required
 def sell():
     """Sell shares of stock"""
-    data = db.execute(f"SELECT shares FROM stocks WHERE symbol = \'{request.form['symbol']}\' AND user_id = {session['user_id']};")
+    # In case API change and stock is not found
+    try:
+        stocks_data = lookup(request.form['symbol'])
+    except:
+        error = "Stock not found"
+        print(error)
+        return apology(error)
+    stocks = db.execute(f"SELECT shares FROM stocks WHERE symbol = \'{request.form['symbol']}\' AND user_id = {session['user_id']};")
+    user = db.execute(f"SELECT cash FROM users WHERE id = {session['user_id']};")
     try:
         if stocks[0]['shares'] == 0:
             print("if")
             db.execute(f"DELETE FROM stocks WHERE symbol = \'{request.form['symbol']}\'AND user_id = {session['user_id']};")
         else:
             db.execute(f"UPDATE stocks SET shares = {stocks[0]['shares'] - 1} WHERE symbol = \'{request.form['symbol']}\' AND user_id = {session['user_id']};")
+        db.execute(f" \
+                   UPDATE users \
+                      SET cash = {user[0]['cash'] + stocks_data['price']} \
+                    WHERE id = {session['user_id']}; \
+                   ")
     except:
         print(f"ERROR: You don\'t own any {request.form['symbol']}")
     return redirect("/")

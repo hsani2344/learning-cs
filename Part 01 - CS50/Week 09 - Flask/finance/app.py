@@ -199,5 +199,9 @@ def sell():
     # TODO Sell
     # TODO Record the action in a history
     # TODO ERROR #1: I don't have any stock
-    # TODO ERROR #2: Stock does not exist
+    data = db.execute(f"SELECT shares FROM stocks WHERE symbol = \'{request.form['symbol']}\' AND user_id = {session['user_id']}")
+    try:
+        db.execute(f"UPDATE shares SET shares = {data[0]['stocks'] - 1} WHERE symbol = \'{request.form['symbol']}\' AND user_id = {session['user_id']}")
+    except:
+        print(f"ERROR: You don\'t own any {request.form['symbol']}")
     return apology("TODO")

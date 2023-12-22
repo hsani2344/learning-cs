@@ -196,12 +196,13 @@ def register():
 @login_required
 def sell():
     """Sell shares of stock"""
-    # TODO Sell
-    # TODO Record the action in a history
-    # TODO ERROR #1: I don't have any stock
-    data = db.execute(f"SELECT shares FROM stocks WHERE symbol = \'{request.form['symbol']}\' AND user_id = {session['user_id']}")
+    data = db.execute(f"SELECT shares FROM stocks WHERE symbol = \'{request.form['symbol']}\' AND user_id = {session['user_id']};")
     try:
-        db.execute(f"UPDATE shares SET shares = {data[0]['stocks'] - 1} WHERE symbol = \'{request.form['symbol']}\' AND user_id = {session['user_id']}")
+        if stocks[0]['shares'] == 0:
+            print("if")
+            db.execute(f"DELETE FROM stocks WHERE symbol = \'{request.form['symbol']}\'AND user_id = {session['user_id']};")
+        else:
+            db.execute(f"UPDATE stocks SET shares = {stocks[0]['shares'] - 1} WHERE symbol = \'{request.form['symbol']}\' AND user_id = {session['user_id']};")
     except:
         print(f"ERROR: You don\'t own any {request.form['symbol']}")
-    return apology("TODO")
+    return redirect("/")

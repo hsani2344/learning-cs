@@ -85,28 +85,28 @@
         </tr>
       </thead>
       <tbody>
-        {% block main %}
+        {% for stocks in user_stocks %}
         <tr>
-          <td>{# stock.symbol #}</td>
+          <td>{{ stocks.symbol }}</td>
           <td></td>
           <td>1</td>
           <td></td>
           <td>0</td>
         </tr>
-        {% endblock %}
+        {% endfor %}
         <tr>
           <td></td>
           <td></td>
           <td></td>
           <td>Cash</td>
-          <td>{{ user_stocks.cash }}</td>
+          <td>{{ user.cash }}</td>
         </tr>
         <tr>
           <td></td>
           <td></td>
           <td></td>
           <td>TOTAL</td>
-          <td>{{ user_stocks.cash }}</td>
+          <td>{{ user.cash }}</td>
         </tr>
       </tbody>
     </table>

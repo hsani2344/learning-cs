@@ -35,14 +35,11 @@ def after_request(response):
 @login_required
 def index():
     """Show portfolio of stocks"""
-    # Create an array of dict with
-    # Stock price and symbol
-    # Number of shares from database
-    # Money
-    user_stocks = db.execute(f"SELECT username, cash FROM users")
-    print(user_stocks)
+    user = db.execute("SELECT cash FROM users")
+    stock_id = db.execute(f"SELECT id FROM stocks WHERE symbol=\'{request.form['symbol']}\';");  
+    user_stocks = db.execute(f"SELECT * FROM users_stocks JOIN stocks ON users_stocks.stock_id = stocks.id WHERE user_id = {session['user_id']} AND stock_id = {stock_id[0]['id']};")                         
     try:
-        return render_template("portfolio.html", user_stocks=user_stocks[0])
+        return render_template("portfolio.html", user=user[0], user_stocks=user_stocks)
     except:
         return apology("TODO")
 
@@ -55,46 +52,27 @@ def buy():
         return render_template("buy.html")
     else:
         stocks_data = lookup(f"{request.form['symbol']}")
+        print(stocks_data)
         if stocks_data == None:
             return apology("Stock not found")
-        user = db.execute(f" \
-                          SELECT cash \
-                            FROM users \
-                           WHERE id = {session['user_id']}; \
-                          ")
-        user_stocks = db.execute(f" \
-                                 SELECT * \
-                                 FROM stocks \
-                                 WHERE user_id = {session['user_id']} \
-                                   AND symbol = \'{request.form['symbol']}\'; \
-                                 ")                         
+        try:
+            db.execute(f"INSERT INTO stocks(symbol, name) VALUES (\'{stocks_data['name']}\', \'{stocks_data['symbol']}\');")
+        except:
+            pass
+        stock_id = db.execute(f"SELECT id FROM stocks WHERE symbol=\'{request.form['symbol']}\';");
+        user = db.execute(f"SELECT cash FROM users WHERE id = {session['user_id']};")
+        user_stocks = db.execute(f"SELECT shares FROM users_stocks JOIN stocks ON users_stocks.stock_id = stocks.id WHERE user_id = {session['user_id']} AND stock_id = {stock_id[0]['id']};")                         
         if stocks_data['price'] > user[0]['cash']:
             return apology("Not enough money")
         try:
             new_shares = user_stocks[0]['shares'] + 1
-            db.execute(f" \
-                       UPDATE stocks \
-                       SET shares = {new_shares} \
-                       WHERE user_id = {session['user_id']} \
-                         AND symbol = \'{request.form['symbol']}\'; \
-                       ")
+            db.execute(f"UPDATE users_stocks SET shares = {new_shares} WHERE user_id = {session['user_id']} AND stock_id = {stock_id[0]['id']};")
         except:
-            print(f" \
-                  User not found in \
-                  TABLE stocks \
-                  WHERE id = {session['user_id']} \
-                    AND symbol = \'{request.form['symbol']}\' \
-                  ")
-            db.execute(f" \
-                       INSERT INTO stocks(user_id, symbol) \
-                       VALUES ({session['user_id']}, \'{request.form['symbol']}\'); \
-                       ")
-        db.execute(f" \
-                   UPDATE users \
-                      SET cash = {user[0]['cash'] - stocks_data['price']} \
-                    WHERE id = {session['user_id']}; \
-                   ")
-        return redirect("/")
+            print(f"User doesn't have any stock yet")
+            db.execute(f"INSERT INTO users_stocks(user_id, stock_id) VALUES ({session['user_id']},{stock_id[0]['id']})")
+        db.execute(f"UPDATE users SET cash = {user[0]['cash'] - stocks_data['price']} WHERE id = {session['user_id']};")
+        # return redirect("/")
+    return apology("TODO")
 
 
 @app.route("/history")

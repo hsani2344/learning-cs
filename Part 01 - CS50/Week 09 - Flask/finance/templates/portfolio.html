@@ -87,10 +87,10 @@
       <tbody>
         {% block main %}
         <tr>
-          <td>{{ stock.symbol }}</td>
-          <td>{{ stock.name }}</td>
+          <td>{# stock.symbol #}</td>
+          <td></td>
           <td>1</td>
-          <td>{{ stock.price }}</td>
+          <td></td>
           <td>0</td>
         </tr>
         {% endblock %}
@@ -99,14 +99,14 @@
           <td></td>
           <td></td>
           <td>Cash</td>
-          <td>500</td>
+          <td>{{ user_stocks.cash }}</td>
         </tr>
         <tr>
           <td></td>
           <td></td>
           <td></td>
           <td>TOTAL</td>
-          <td>1000</td>
+          <td>{{ user_stocks.cash }}</td>
         </tr>
       </tbody>
     </table>

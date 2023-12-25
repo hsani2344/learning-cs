@@ -39,10 +39,12 @@ def index():
     # Stock price and symbol
     # Number of shares from database
     # Money
-    # try:
-        # return render_template("portfolio.html", stock=stock, portfolio=portfolio)
-    # except:
-    return apology("TODO")
+    user_stocks = db.execute(f"SELECT username, cash FROM users")
+    print(user_stocks)
+    try:
+        return render_template("portfolio.html", user_stocks=user_stocks[0])
+    except:
+        return apology("TODO")
 
 
 @app.route("/buy", methods=["GET", "POST"])

@@ -43,6 +43,48 @@ def index():
     except:
         return apology("TODO")
 
+def get_stock_id(symbol):
+    return  db.execute(f"SELECT id FROM stocks WHERE symbol=\'{symbol}\';")
+
+def is_empty(array):
+    if len(array) == 0:
+        return True
+    else:
+        return False
+
+
+def insert_stocks(symbol, name):
+    db.execute(f"INSERT INTO stocks(symbol, name) VALUES (\'{symbol}\', \'{name}\');")
+
+
+def get_user_info(user_id, column):
+    result = db.execute(f"SELECT {column} FROM users WHERE id = {user_id};")
+    return result
+
+
+def get_user_stock(user_id, stock_id):
+    result = db.execute(f"SELECT shares FROM users_stocks JOIN stocks ON users_stocks.stock_id = stocks.id WHERE user_id = {user_id} AND stock_id = {stock_id};")                         
+    return result;
+
+
+def update_user_stock(user_id, stock_id, shares):
+    db.execute(f"UPDATE users_stocks SET shares = {shares} WHERE user_id = {user_id} AND stock_id = {stock_id};")
+
+
+def insert_user_stock(user_id, stock_id):
+    db.execute(f"INSERT INTO users_stocks(user_id, stock_id) VALUES ({user_id},{stock_id})")
+
+
+def withdraw_user_cash(user_id, user_cash, stock_price):
+    db.execute(f"UPDATE users SET cash = {user_cash - stock_price} WHERE id = {user_id};")
+
+def record_transaction(user_id, stock_id, action, shares):
+    if action == 'BUY' or action == 'SELL':
+        db.execute(f"INSERT INTO history(user_id, action, stock_id, shares) VALUES ({user_id}, \'{action}\', {stock_id}, {shares})");
+        return 0
+    else:
+        return 1
+
 
 @app.route("/buy", methods=["GET", "POST"])
 @login_required
@@ -50,28 +92,38 @@ def buy():
     """Buy shares of stock"""
     if request.method == "GET":
         return render_template("buy.html")
-    else:
-        stocks_data = lookup(f"{request.form['symbol']}")
-        print(stocks_data)
-        if stocks_data == None:
-            return apology("Stock not found")
-        try:
-            db.execute(f"INSERT INTO stocks(symbol, name) VALUES (\'{stocks_data['name']}\', \'{stocks_data['symbol']}\');")
-        except:
+    elif request.method == "POST":
+        stock_data = lookup(f"{request.form['symbol']}")
+        if stock_data == None:
+            error = "Stock not found"
+            print(error) # DEBUG
+            return apology(error)
             pass
-        stock_id = db.execute(f"SELECT id FROM stocks WHERE symbol=\'{request.form['symbol']}\';");
-        user = db.execute(f"SELECT cash FROM users WHERE id = {session['user_id']};")
-        user_stocks = db.execute(f"SELECT shares FROM users_stocks JOIN stocks ON users_stocks.stock_id = stocks.id WHERE user_id = {session['user_id']} AND stock_id = {stock_id[0]['id']};")                         
-        if stocks_data['price'] > user[0]['cash']:
-            return apology("Not enough money")
+        print(f"Stock data: {stock_data}") # DEBUG
+        stock_db = get_stock_id(request.form['symbol'])
+        if is_empty(stock_db):
+            print(f"Stock not in database") # DEBUG
+            insert_stocks(stock_data['name'], stock_data['symbol'])
+            stock_db = get_stock_id(request.form['symbol'])
+        print(f"StockID: {stock_db[0]['id']}") # DEBUG
+        user = get_user_info(session['user_id'], "cash")
+        print(f"User cash: {user[0]['cash']}") # DEBUG
+        user_stocks = get_user_stock(session['user_id'], stock_db[0]['id'])
+        print(f"User stocks: {user_stocks}") # DEBUG
+        if stock_data['price'] > user[0]['cash']:
+            error = "Not enough money"
+            print(error)
+            return apology(error)
         try:
             new_shares = user_stocks[0]['shares'] + 1
-            db.execute(f"UPDATE users_stocks SET shares = {new_shares} WHERE user_id = {session['user_id']} AND stock_id = {stock_id[0]['id']};")
+            update_user_stock(session['user_id'], stock_db[0]['id'], new_shares)
         except:
             print(f"User doesn't have any stock yet")
-            db.execute(f"INSERT INTO users_stocks(user_id, stock_id) VALUES ({session['user_id']},{stock_id[0]['id']})")
-        db.execute(f"UPDATE users SET cash = {user[0]['cash'] - stocks_data['price']} WHERE id = {session['user_id']};")
-        # return redirect("/")
+            new_shares = 1
+            insert_user_stock(session['user_id'], stock_db[0]['id'])
+        withdraw_user_cash(session['user_id'],user[0]['cash'], stock_data['price'])
+        record_transaction(session['user_id'], stock_db[0]['id'], 'BUY', new_shares)
+
     return apology("TODO")
 
 

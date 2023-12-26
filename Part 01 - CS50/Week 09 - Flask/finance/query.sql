@@ -14,11 +14,11 @@ CREATE TABLE users_stocks (
 );
 
 CREATE TABLE history (
-    id SERIAL PRIMARY KEY UNIQUE NOT NULL,
+    id INTEGER PRIMARY KEY UNIQUE NOT NULL,
     user_id SERIAL NOT NULL,
-    type VARCHAR NOT NULL,
+    action VARCHAR NOT NULL,
     stock_id SERIAL NOT NULL,
     shares INT UNSIGNED NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (stocks_id) REFERENCES stocks(id)
+    FOREIGN KEY (stock_id) REFERENCES stocks(id)
 );

@@ -35,7 +35,7 @@ def after_request(response):
 @login_required
 def index():
     """Show portfolio of stocks"""
-    user = db.execute("SELECT cash FROM users")
+    user = db.execute(f"SELECT cash FROM users WHERE id = {session['user_id']}")
     user_stocks = db.execute(f"SELECT shares, symbol, name FROM users_stocks JOIN stocks ON users_stocks.stock_id = stocks.id WHERE user_id = {session['user_id']}")
     try:
         return render_template("portfolio.html", user=user[0], user_stocks=user_stocks, lookup=lookup)
@@ -75,55 +75,23 @@ def insert_user_stock(user_id, stock_id):
     db.execute(f"INSERT INTO users_stocks(user_id, stock_id) VALUES ({user_id},{stock_id})")
 
 
-def withdraw_user_cash(user_id, user_cash, stock_price):
+def deduct_user_cash(user_id, user_cash, stock_price):
     db.execute(f"UPDATE users SET cash = {user_cash - stock_price} WHERE id = {user_id};")
+
+
+def add_user_cash(user_id, user_cash, stock_price):
+    db.execute(f"UPDATE users SET cash = {user_cash + stock_price} WHERE id = {user_id};")
+
 
 def record_transaction(user_id, stock_id, action, shares):
     if action == 'BUY' or action == 'SELL':
-        db.execute(f"INSERT INTO history(user_id, action, stock_id, shares) VALUES ({user_id}, \'{action}\', {stock_id}, {shares})");
+        db.execute(f"INSERT INTO history(user_id, action, stock_id, shares) VALUES ({user_id}, \'{action}\', {stock_id}, {shares});");
         return 0
     else:
         return 1
 
-
-@app.route("/buy", methods=["GET", "POST"])
-@login_required
-def buy():
-    """Buy shares of stock"""
-    if request.method == "GET":
-        return render_template("buy.html")
-    elif request.method == "POST":
-        stock_data = lookup(f"{request.form['symbol']}")
-        if stock_data == None:
-            error = "Stock not found"
-            print(error) # DEBUG
-            return apology(error)
-            pass
-        print(f"Stock data: {stock_data}") # DEBUG
-        stock_db = get_stock_id(request.form['symbol'])
-        if is_empty(stock_db):
-            print(f"Stock not in database") # DEBUG
-            insert_stocks(stock_data['name'], stock_data['symbol'])
-            stock_db = get_stock_id(request.form['symbol'])
-        print(f"StockID: {stock_db[0]['id']}") # DEBUG
-        user = get_user_info(session['user_id'], "cash")
-        print(f"User cash: {user[0]['cash']}") # DEBUG
-        user_stocks = get_user_stock(session['user_id'], stock_db[0]['id'])
-        print(f"User stocks: {user_stocks}") # DEBUG
-        if stock_data['price'] > user[0]['cash']:
-            error = "Not enough money"
-            print(error)
-            return apology(error)
-        try:
-            new_shares = user_stocks[0]['shares'] + 1
-            update_user_stock(session['user_id'], stock_db[0]['id'], new_shares)
-        except:
-            print(f"User doesn't have any stock yet")
-            new_shares = 1
-            insert_user_stock(session['user_id'], stock_db[0]['id'])
-        withdraw_user_cash(session['user_id'],user[0]['cash'], stock_data['price'])
-        record_transaction(session['user_id'], stock_db[0]['id'], 'BUY', new_shares)
-    return redirect("/")
+def delete_user_stock_entry(user_id, stock_id):
+    db.execute(f"DELETE FROM users_stocks WHERE user_id = {user_id} AND stock_id = {stock_id};")
 
 
 @app.route("/history")
@@ -131,6 +99,35 @@ def buy():
 def history():
     """Show history of transactions"""
     return render_template("history.html")
+
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    """Register user"""
+    if request.method == "GET":
+        return render_template("register.html")
+    else:
+        if request.form['username'] == '' or request.form['password'] == '':
+            error = 'Form unfilled'
+            print(error)
+            return apology(error)
+        db_username = db.execute(f"SELECT username FROM users WHERE username = \'{request.form['username']}\';")
+        if len(db_username) > 0:
+            error = 'Username taken'
+            print(error)
+            return apology(error)
+        db.execute(
+                   f"""
+                       INSERT INTO users(username, hash)
+                       VALUES (\'{request.form['username']}\', \'{generate_password_hash(request.form['password'])}\');
+                   """)
+        session["user_id"] = db.execute(
+                           f"""
+                               SELECT id
+                                 FROM users
+                                WHERE username = \'{request.form['username']}\';
+                           """)[0]['id']
+        return redirect("/")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -194,59 +191,96 @@ def quote():
                                )
 
 
-@app.route("/register", methods=["GET", "POST"])
-def register():
-    """Register user"""
+@app.route("/buy", methods=["GET", "POST"])
+@login_required
+def buy():
+    """Buy shares of stock"""
     if request.method == "GET":
-        return render_template("register.html")
-    else:
-        if request.form['username'] == '' or request.form['password'] == '':
-            error = 'Form unfilled'
-            print(error)
-            return apology(error)
-        db_username = db.execute(f"SELECT username FROM users WHERE username = \'{request.form['username']}\';")
-        if len(db_username) > 0:
-            error = 'Username taken'
-            print(error)
-            return apology(error)
-        db.execute(
-                   f"""
-                       INSERT INTO users(username, hash)
-                       VALUES (\'{request.form['username']}\', \'{generate_password_hash(request.form['password'])}\');
-                   """)
-        session["user_id"] = db.execute(
-                           f"""
-                               SELECT id
-                                 FROM users
-                                WHERE username = \'{request.form['username']}\';
-                           """)[0]['id']
-        return redirect("/")
+        return render_template("buy.html")
+    elif request.method == "POST":
+        pass
+    stock_data = lookup(f"{request.form['symbol']}")
+    if stock_data == None:
+        error = "Stock not found"
+        print(error) # DEBUG
+        return apology(error)
+    print(f"Stock data: {stock_data}") # DEBUG
+    stock_db = get_stock_id(request.form['symbol'])
+    if is_empty(stock_db):
+        print(f"Stock not in database") # DEBUG
+        insert_stocks(stock_data['name'], stock_data['symbol'])
+        stock_db = get_stock_id(request.form['symbol'])
+    print(f"StockID: {stock_db[0]['id']}") # DEBUG
+    user = get_user_info(session['user_id'], "cash")
+    print(f"User cash: {user[0]['cash']}") # DEBUG
+    user_stocks = get_user_stock(session['user_id'], stock_db[0]['id'])
+    print(f"User stocks: {user_stocks}") # DEBUG
+    if stock_data['price'] > user[0]['cash']:
+        error = "Not enough money"
+        print(error)
+        return apology(error)
+    try:
+        new_shares = user_stocks[0]['shares'] + 1
+        update_user_stock(session['user_id'], stock_db[0]['id'], new_shares)
+    except:
+        print(f"User doesn't have any stock yet")
+        new_shares = 1
+        insert_user_stock(session['user_id'], stock_db[0]['id'])
+    deduct_user_cash(session['user_id'],user[0]['cash'], stock_data['price'])
+    record_transaction(session['user_id'], stock_db[0]['id'], 'BUY', new_shares)
+    return redirect("/")
 
 
 @app.route("/sell", methods=["GET", "POST"])
 @login_required
 def sell():
     """Sell shares of stock"""
-    # In case API change and stock is not found
-    try:
-        stocks_data = lookup(request.form['symbol'])
-    except:
+    if request.method == "GET":
+        return render_template("sell.html")
+    elif request.method == "POST":
+        pass
+    stock_data = lookup(f"{request.form['symbol']}")
+
+    # DEBUG: in case API change and stock is not found
+    if stock_data == None:
         error = "Stock not found"
         print(error)
         return apology(error)
-    stocks = db.execute(f"SELECT shares FROM stocks WHERE symbol = \'{request.form['symbol']}\' AND user_id = {session['user_id']};")
-    user = db.execute(f"SELECT cash FROM users WHERE id = {session['user_id']};")
-    try:
-        if stocks[0]['shares'] == 0:
-            print("if")
-            db.execute(f"DELETE FROM stocks WHERE symbol = \'{request.form['symbol']}\'AND user_id = {session['user_id']};")
-        else:
-            db.execute(f"UPDATE stocks SET shares = {stocks[0]['shares'] - 1} WHERE symbol = \'{request.form['symbol']}\' AND user_id = {session['user_id']};")
-        db.execute(f" \
-                   UPDATE users \
-                      SET cash = {user[0]['cash'] + stocks_data['price']} \
-                    WHERE id = {session['user_id']}; \
-                   ")
-    except:
-        print(f"ERROR: You don\'t own any {request.form['symbol']}")
+
+    # Log
+    print(f"Stock data: {stock_data}")
+
+    # Setting variables for queries
+    stock_db = get_stock_id(request.form['symbol'])
+    user_stocks = get_user_stock(session['user_id'], stock_db[0]['id'])
+
+    # DEBUG: in case user makes an error
+    if is_empty(stock_db):
+        error = "Stock not in database"
+        print(error)
+        apology(error)
+    if len(user_stocks) == 0:
+        error = "Doesn't own stock"
+        print(error)
+        return apology(error)
+
+    # Log
+    print(f"User stocks: {user_stocks}")
+
+    new_shares = user_stocks[0]['shares'] - 1
+
+    # Log
+    print(f"New Shares: {new_shares}")
+
+    user = get_user_info(session['user_id'], "cash")
+
+    # Log
+    print(f"User cash: {user[0]['cash']}")
+
+    add_user_cash(session['user_id'],user[0]['cash'], stock_data['price'])
+    if new_shares == 0:
+        delete_user_stock_entry(session['user_id'], stock_db[0]['id'])
+    else:
+        update_user_stock(session['user_id'], stock_db[0]['id'], new_shares)
+    record_transaction(session['user_id'], stock_db[0]['id'], 'SELL', new_shares)
     return redirect("/")

@@ -36,12 +36,12 @@ def after_request(response):
 def index():
     """Show portfolio of stocks"""
     user = db.execute("SELECT cash FROM users")
-    stock_id = db.execute(f"SELECT id FROM stocks WHERE symbol=\'{request.form['symbol']}\';");  
-    user_stocks = db.execute(f"SELECT * FROM users_stocks JOIN stocks ON users_stocks.stock_id = stocks.id WHERE user_id = {session['user_id']} AND stock_id = {stock_id[0]['id']};")                         
+    user_stocks = db.execute(f"SELECT shares, symbol, name FROM users_stocks JOIN stocks ON users_stocks.stock_id = stocks.id WHERE user_id = {session['user_id']}")
     try:
-        return render_template("portfolio.html", user=user[0], user_stocks=user_stocks)
+        return render_template("portfolio.html", user=user[0], user_stocks=user_stocks, lookup=lookup)
     except:
         return apology("TODO")
+
 
 def get_stock_id(symbol):
     return  db.execute(f"SELECT id FROM stocks WHERE symbol=\'{symbol}\';")
@@ -123,8 +123,7 @@ def buy():
             insert_user_stock(session['user_id'], stock_db[0]['id'])
         withdraw_user_cash(session['user_id'],user[0]['cash'], stock_data['price'])
         record_transaction(session['user_id'], stock_db[0]['id'], 'BUY', new_shares)
-
-    return apology("TODO")
+    return redirect("/")
 
 
 @app.route("/history")

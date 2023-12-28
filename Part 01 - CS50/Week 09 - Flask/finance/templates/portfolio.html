@@ -78,31 +78,28 @@
       <thead>
         <tr>
           <th>Symbol</th>
-          <th>Name</th>
           <th>Shares</th>
           <th>Price</th>
           <th>Total</th>
         </tr>
       </thead>
       <tbody>
-        {% for stocks in user_stocks %}
+        {% for stock in user_stocks %}
         <tr>
-          <td>{{ stocks.symbol }}</td>
-          <td></td>
-          <td>1</td>
-          <td></td>
-          <td>0</td>
+          <td>{{ stock.symbol }}</td>
+          <td>{{ stock.shares }}</td>
+          {% set stock_data = lookup(stock.symbol) %}
+          <td>{{ stock_data['price'] }}</td>
+          <td>{{ stock_data['price'] * stock.shares }}</td>
         </tr>
         {% endfor %}
         <tr>
-          <td></td>
           <td></td>
           <td></td>
           <td>Cash</td>
           <td>{{ user.cash }}</td>
         </tr>
         <tr>
-          <td></td>
           <td></td>
           <td></td>
           <td>TOTAL</td>

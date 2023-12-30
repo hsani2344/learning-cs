@@ -78,31 +78,13 @@
       <thead>
         <tr>
           <th>Symbol</th>
-          <th>Shares</th>
           <th>Price</th>
-          <th>Total</th>
         </tr>
       </thead>
       <tbody>
-        {% for stock in user_stocks %}
         <tr>
           <td>{{ stock.symbol }}</td>
-          <td>{{ stock.shares }}</td>
-          <td>{{ stock_data_list[loop.index - 1]['price'] }}</td>
-          <td>{{ stock_data_list[loop.index - 1]['price'] * stock.shares }}</td>
-        </tr>
-        {% endfor %}
-        <tr>
-          <td></td>
-          <td></td>
-          <td>Cash</td>
-          <td>{{ "%.2f" % user.cash }}</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td></td>
-          <td>TOTAL</td>
-          <td>{{ "%.2f" % (user.cash + total_stock) }}</td>
+          <td>{{ stock.price }}</td>
         </tr>
       </tbody>
     </table>

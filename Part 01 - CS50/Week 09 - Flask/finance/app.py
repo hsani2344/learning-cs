@@ -37,8 +37,14 @@ def index():
     """Show portfolio of stocks"""
     user = db.execute(f"SELECT cash FROM users WHERE id = {session['user_id']}")
     user_stocks = db.execute(f"SELECT shares, symbol, name FROM users_stocks JOIN stocks ON users_stocks.stock_id = stocks.id WHERE user_id = {session['user_id']}")
+    total_stock = 0
+    stock_data_list = []
+    for stock in user_stocks:
+        stock_data = (lookup(stock['symbol']))
+        total_stock +=  stock_data['price'] * stock['shares']
+        stock_data_list.append(stock_data)
     try:
-        return render_template("portfolio.html", user=user[0], user_stocks=user_stocks, lookup=lookup)
+        return render_template("portfolio.html", user=user[0], user_stocks=user_stocks, total_stock=total_stock, stock_data_list=stock_data_list)
     except:
         return apology("TODO")
 
@@ -94,11 +100,16 @@ def delete_user_stock_entry(user_id, stock_id):
     db.execute(f"DELETE FROM users_stocks WHERE user_id = {user_id} AND stock_id = {stock_id};")
 
 
+def get_history(user_id):
+    return db.execute(f"SELECT action, shares, symbol, name FROM history JOIN stocks ON stocks.id = history.stock_id WHERE user_id = '{user_id}';")
+
+
 @app.route("/history")
 @login_required
 def history():
     """Show history of transactions"""
-    return render_template("history.html")
+    history_db = get_history(session['user_id'])
+    return render_template("history.html", history = history_db)
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -184,11 +195,12 @@ def quote():
     if request.method == "GET":
         return render_template("quote.html")
     else:
-        return render_template(
-                               "layout.html",
-                               # Get stock symbol, name and price
-                               stock=lookup(request.form['symbol'])
-                               )
+        stock_data = lookup(request.form['symbol'])
+        if stock_data == None:
+            error = "Stock not found"
+            print(error)
+            return apology(error)
+        return render_template( "quote-info.html", stock=stock_data)
 
 
 @app.route("/buy", methods=["GET", "POST"])
